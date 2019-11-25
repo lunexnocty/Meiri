@@ -35,10 +35,10 @@ class Session:
     def InitUserManager(self, userManager):
         self.userManager = userManager
 
-    def Execute(self, sender, message):
+    async def Execute(self, sender, message):
         sender = self.userManager.GetUser(sender)
         if self.command:
-            self.command.Execute(sender, message.text.split(' '))
+            await self.command.Execute(sender, message.text.split(' '))
             if self.command.completed:
                 self.command = None
         else:
@@ -46,11 +46,11 @@ class Session:
             if self.command:
                 name = self.command.GetName()
                 if name in Command.SYSTEM or self.plugins[self.command.GetName()]:
-                    self.command.Execute(sender, self.args)
+                    await self.command.Execute(sender, self.args)
                     if self.command.completed:
                         self.command = None
                 else:
-                    self.Send(f'Plugin <{self.command}> disabled. please enable it first.')
+                    await self.Send(f'Plugin <{self.command}> disabled. please enable it first.')
     
     def Parse(self, message):
         params = message.text.split(' ')
@@ -60,5 +60,5 @@ class Session:
                 self.command = Command.GetCommand(name, self)
                 self.args = params[1:]
 
-    def Send(self, message, reciever=None):
+    async def Send(self, message, reciever=None):
         raise NotImplementedError

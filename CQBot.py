@@ -16,7 +16,7 @@ async def handle_msg(context):
     session = CQSession(context)
     data = context['message']
     message = Message(data)
-    meiri.OnMessage(session, sender, message)
+    await meiri.OnMessage(session, sender, message)
 
 @CQBot.on_request('group', 'friend')
 async def handle_request(context):
@@ -50,7 +50,7 @@ class CQSession(Session):
         self.handle = handle
         self.extra = kwargs
     
-    def Send(self, message, reciever=None):
+    async def Send(self, message, reciever=None):
         at_user = False
         context = self.extra 
         if self.stype == SessionType.GROUP:
@@ -62,13 +62,8 @@ class CQSession(Session):
         elif self.stype == SessionType.FRIEND or self.stype == SessionType.TEMPORARY:
             context['message_type'] = 'private'
             context['user_id'] = self.handle
-        import asyncio
-        newLoop = asyncio.new_event_loop()
-        asyncio.set_event_loop(newLoop)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(CQBot.send(context, message=message, at_sender=at_user))
-        loop.close()
-
+        await CQBot.send(context, message=message, at_sender=at_user)
+        
 if __name__ == '__main__':
     import sys
     if len(sys.argv) == 1 or sys.argv[1] == 'start':

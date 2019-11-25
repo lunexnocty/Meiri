@@ -4,10 +4,10 @@ from Meiri import Command
 
 @Command('set')
 class Set:
-    def Execute(self, sender, args):
+    async def Execute(self, sender, args):
         self.Parse(args)
         if self.option == 'name':
-            self.session.Send(f'已将{sender.name}的名字变更为{self.value}')
+            await self.session.Send(f'已将{sender.name}的名字变更为{self.value}')
             sender.SetName(self.value)
         self.completed = True
     

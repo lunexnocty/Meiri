@@ -21,9 +21,9 @@ class Meiri:
                 self.route[sid] = [sid]
         return self.sessions[sid]
     
-    def OnMessage(self, session, sender, message):
+    async def OnMessage(self, session, sender, message):
         for sid in self.route[self.GetSession(session).sid]:
-            self.sessions[sid].Execute(sender, message)
+            await self.sessions[sid].Execute(sender, message)
     
     def AddListening(self, sid, sids):
         from collections import Iterable
