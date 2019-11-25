@@ -46,10 +46,11 @@ class CQSession(Session):
 
         stype, handle = GetMetaData(kwargs)
         super().__init__(stype, handle)
+        self.stype = stype
+        self.handle = handle
         self.extra = kwargs
     
     def Send(self, message, reciever=None):
-        print('成功调用了发送接口')
         at_user = False
         context = self.extra 
         if self.stype == SessionType.GROUP:
