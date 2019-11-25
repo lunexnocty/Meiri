@@ -18,7 +18,7 @@ class Incan:
         self.artifact = 0
         self.temples = Deck('Temple')
         
-        self.helpdoc = '指令列表: \n<start/run> 开始新的一轮\n<join> 加入游戏\n<go/back> 前进/撤退\n<next> 进入下一轮.\n<exit/quit> 退出'
+        self.helpdoc = '指令列表: \n<start/run> 开始游戏\n<join> 加入游戏\n<status> 查看状态\n<go/back> 前进/撤退\n<rule/doc> 查看规则\n<exit/quit> 退出'
         self.ruledoc = '规则介绍(不知道怎么简短的介绍，有人有想法可以私发给我.)'
         self.greeting = '欢迎用语，可以玩了.（感觉要改设定，谁想个故事背景我编进去？）'
         self.version = 'version 2.0.0'
@@ -177,7 +177,7 @@ class Incan:
         if self.round == 5:
             await self.Clearing()
         else:
-            await self.session.Send(f'第{self.round}结束。')
+            await self.session.Send(f'第{self.round}轮结束。')
             await self.session.Send(f'第{self.round+1}轮：{self.temples.Draw().name}')
 
 
