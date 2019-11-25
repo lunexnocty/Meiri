@@ -3,7 +3,7 @@
 from aiocqhttp import CQHttp
 
 from Meiri import User, Session, SessionType, Message, UserManager
-from Meiri import meiri, asyncfunction
+from Meiri import meiri
 
 CQBot = CQHttp(api_root='http://127.0.0.1:5700/', access_token='AmeyaMeiri', secret='AmeyaMeiri')
 
@@ -14,8 +14,8 @@ async def handle_msg(context):
     sender = CQUser(context['sender']['user_id'], name=context['sender']['nickname'])
     session = CQSession(context)
     data = context['message']
-    message = Message(data, sender=sender)
-    meiri.Shell(session, message)
+    message = Message(data)
+    meiri.OnMessage(session, sender, message)
 
 @CQBot.on_request('group', 'friend')
 async def handle_request(context):
@@ -47,7 +47,6 @@ class CQSession(Session):
         super().__init__(stype, handle)
         self.extra = kwargs
     
-    @asyncfunction
     def Send(self, message, reciever=None):
         at_user = False
         context = self.extra 
@@ -70,10 +69,4 @@ class CQSession(Session):
 if __name__ == '__main__':
     import sys
     if len(sys.argv) == 1 or sys.argv[1] == 'start':
-        meiri.Run()
         CQBot.run(host='127.0.0.1', port=8080)
-    elif sys.argv[1] == 'stop':
-        meiri.Stop()
-    elif sys.argv[1] == 'restart':
-        meiri.Stop()
-        meiri.Run()
