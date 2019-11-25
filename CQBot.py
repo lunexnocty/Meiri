@@ -2,8 +2,9 @@
 
 from aiocqhttp import CQHttp
 
-from Meiri import User, Session, SessionType, Message, UserManager
 from Meiri import meiri
+from Meiri import User, Session, SessionType, Message, UserManager
+from Plugins import *
 
 CQBot = CQHttp(api_root='http://127.0.0.1:5700/', access_token='AmeyaMeiri', secret='AmeyaMeiri')
 
@@ -22,10 +23,10 @@ async def handle_request(context):
     return {'approve': True}
 
 class CQUser(User):
-    def __init__(self, uid, name='unknown', sex='female', age=17):
-        super().__init__(uid, name)
-        self.sex = sex
-        self.age = age
+    def __init__(self, uid, name=None):
+        if name is None:
+            name = str(uid)
+        super().__init__(str(uid), name)
     
 class CQSession(Session):
     def __init__(self, kwargs):
@@ -48,6 +49,7 @@ class CQSession(Session):
         self.extra = kwargs
     
     def Send(self, message, reciever=None):
+        print('成功调用了发送接口')
         at_user = False
         context = self.extra 
         if self.stype == SessionType.GROUP:
