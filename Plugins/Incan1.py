@@ -6,8 +6,8 @@ from time import sleep
 from random import randint, choice, shuffle
 from enum import Enum, unique
 
-@Command('incan-bak')
-class Incan:
+@Command('incan1')
+class Incan1:
     def __init__(self):
         self.status = IncanStatus.READY
         self.description = [

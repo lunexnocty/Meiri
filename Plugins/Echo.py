@@ -6,8 +6,8 @@ from Meiri import Command
 class Echo:
     def Execute(self, sender, args):
         self.Parse(args)
-        self.session.Send(self.text)
         self.completed = True
+        self.session.Send(self.text)
     
     def Parse(self, args):
         self.text = ' '.join(args)
