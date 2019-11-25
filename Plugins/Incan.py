@@ -39,8 +39,6 @@ class Incan:
             return Option.FORWARD
         elif option in ['back', 'retreat', 'escape']:
             return Option.RETREAT
-        elif option in ['next']:
-            return Option.NEXTROUND
         elif option in ['status']:
             return Option.STATUS
         elif option in ['start', 'run']:
@@ -85,22 +83,6 @@ class Incan:
             await self.InQueue(sender)
         elif self.status == IncanStatus.GAMING and sender.uid in self.members:
             await self.Gaming(sender)
-        elif self.status is IncanStatus.INTERVAL and sender.uid in self.members:
-            await self.Interval(sender)
-    
-    async def Interval(self, sender):
-        if self.option == Option.EXIT:
-            await self.session.Send('游戏结束~下次再见~')
-            self.completed = True
-        elif self.option == Option.HELP:
-            await self.session.Send(self.helpdoc)
-        elif self.option == Option.RULE:
-            await self.session.Send(self.ruledoc)
-        elif self.option == Option.VERSION:
-            await self.session.Send(self.version)
-        elif self.option is Option.NEXTROUND:
-            self.status = IncanStatus.GAMING
-            await self.session.Send(f'第{self.round+1}轮：{self.temples.Draw().name}')
 
     async def InQueue(self, sender):
         if self.option == Option.EXIT:
@@ -163,7 +145,7 @@ class Incan:
                         await self.session.Send(f'<{">, <".join([self.members[uid]["name"] for uid in adventures])}>被驱逐出神殿，一无所获.')
                         self.deck = Deck()
                         self.deck.Remove(card.name)
-                        self.EnterNextRound()
+                        await self.EnterNextRound()
                     else:
                         self.monsters.append(card.name)
                         await self.session.Send(f'发现了来自<{card.name}>的警告.')
@@ -195,8 +177,9 @@ class Incan:
         if self.round == 5:
             await self.Clearing()
         else:
-            self.status = IncanStatus.INTERVAL
-            await self.session.Send('本轮冒险完成，是否进入下一座神殿？')
+            await self.session.Send(f'第{self.round}结束。')
+            await self.session.Send(f'第{self.round+1}轮：{self.temples.Draw().name}')
+
 
     async def Clearing(self):
         winner = {'name': None, 'value': 0}
@@ -253,8 +236,7 @@ class Incan:
 class IncanStatus(Enum):
     READY = 0,
     INQUEUE = 1,
-    GAMING = 3,
-    INTERVAL = 4,
+    GAMING = 3
 
 @unique
 class Option(Enum):
@@ -267,8 +249,7 @@ class Option(Enum):
     GAMESTART = 7,
     ROUNDSTART = 8,
     JOINGAME = 9,
-    NEXTROUND = 0,
-    EXIT = 10
+    EXIT = 0
 
 class Card:
     class Type(Enum):
