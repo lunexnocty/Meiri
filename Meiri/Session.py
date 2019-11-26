@@ -51,12 +51,12 @@ class Session:
                 self.context.append(Command.GetCommand(name, self))
                 self.args = params[1:]
                 return
-            elif not self.context and (name in Command.SYSTEM or name in Command.PLUGINS):
-                if self.plugins[name]:
+            elif not self.context and (name in Command.SYSTEM or name in self.plugins):
+                if name in Command.SYSTEM or self.plugins[name]:
                     self.context.append(Command.GetCommand(name, self))
                     self.args = params[1:]
                 else:
-                    await self.session.Send(f'Plugin <{name}> disabled. please enable it first.')
+                    await self.Send(f'Plugin [{name}] was disabled. please enable it first.')
                 return
         self.args = params
 
