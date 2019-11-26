@@ -26,6 +26,8 @@ class Session:
 
     def __init__(self, stype, handle):
         self.sid = self.GetSessionId(stype, handle)
+        self.stype = stype
+        self.handle = handle
         self.plugins = {name: True for name in Command.PLUGINS}
         self.extra = None
         self.context = []

@@ -22,12 +22,12 @@ class Shell:
             if self.option is self.Option.RESTART:
                 while len(self.session.context) > 1:
                     self.session.context.pop(0)
-                await self.session.Send('重启成功.')
+                await self.session.Send('重启成功')
             elif self.option is self.Option.STATUS:
                 if len(self.session.context) > 1:
                     await self.session.Send(f'当前所运行的插件有: [{"], [".join([cmd.GetName() for cmd in self.session.context[:-1]])}]')
                 else:
-                    await self.session.Send('当前无插件运行.')
+                    await self.session.Send('当前无插件运行')
             elif self.option is self.Option.PLUGINS:
                 plugins = '插件列表:\n'
                 for name in self.session.plugins:
