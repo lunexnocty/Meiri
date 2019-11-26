@@ -20,9 +20,9 @@ class Incan:
         self.temples = Deck('Temple')
         
         self.helpdoc = '指令列表: \n<start/run> 开始游戏\n<join> 加入游戏\n<status> 查看状态\n<go/back> 前进/撤退\n<rule/doc> 查看规则\n<exit/quit> 退出'
-        self.ruledoc = '规则介绍(不知道怎么简短的介绍，有人有想法可以私发给我.)'
-        self.greeting = '欢迎用语，可以玩了.（感觉要改设定，谁想个故事背景我编进去？）'
-        self.version = 'version 2.0.0'
+        self.ruledoc = '1. 前进，玩家翻开一张卡牌\n2. 撤退，玩家沿着来时的路径原路返回\n3. 遇到宝石，玩家平分宝石，剩余的宝石留在原地\n4. 遇到遗物，当且仅当一名玩家撤退时可从卡片上获得遗物\n5. 在前进时遇到怪物，第二次遇到将被驱逐出神殿，丢失此轮在神殿中获得的一切收益\n6. 前两个被带出的遗物计5分，后3个被带出的遗物计10分'
+        self.greeting = '欢迎使用印加宝藏2.0\n输入<start/run>即可开始游戏\n输入<help>可以查看指令列表\n输入<rule/doc>查看游戏规则\n如果在游戏过程中有什么问题或建议，请@灯夜(2692327749)'
+        self.version = 'version 2.0'
         
 
     def GetOption(self, option):
@@ -239,7 +239,8 @@ class Incan:
     def GetGameStatus(self):
         status = '角色状态：'
         for uid in self.members:
-            status += f'<{self.members[uid]["name"]}> {self.members[uid]["status"]}\n'
+            state = '下定决心了' if self.members[uid]['status'] != 0 else '还在迷茫中'
+            status += f'<{self.members[uid]["name"]}> {state}\n'
         if self.monsters:
             status += f'警告：\n<{">, <".join(self.monsters)}>'
         else:
