@@ -28,8 +28,7 @@ class Session:
         self.sid = self.GetSessionId(stype, handle)
         self.plugins = {name: True for name in Command.PLUGINS}
         self.extra = None
-        self.command = None
-        self.enabled = True
+        self.context = []
         self.args = []
 
     def InitUserManager(self, userManager):
@@ -37,28 +36,29 @@ class Session:
 
     async def Execute(self, sender, message):
         sender = self.userManager.GetUser(sender)
-        if self.command:
-            await self.command.Execute(sender, message.text.split(' '))
-            if self.command.completed:
-                self.command = None
-        else:
-            self.Parse(message)
-            if self.command:
-                name = self.command.GetName()
-                if name in Command.SYSTEM or self.plugins[self.command.GetName()]:
-                    await self.command.Execute(sender, self.args)
-                    if self.command.completed:
-                        self.command = None
-                else:
-                    await self.Send(f'Plugin <{self.command}> disabled. please enable it first.')
-    
-    def Parse(self, message):
+        await self.Parse(message)
+        if self.context:
+            command = self.context[-1]
+            await command.Execute(sender, self.args)
+            if command.completed:
+                self.context.pop()
+
+    async def Parse(self, message):
         params = message.text.split(' ')
         if params and params[0].startswith(('.', '/', '-')):
             name = params[0][1:]
-            if name in Command.SYSTEM or name in Command.PLUGINS:
-                self.command = Command.GetCommand(name, self)
+            if name == 'syscall':
+                self.context.append(Command.GetCommand(name, self))
                 self.args = params[1:]
+                return
+            elif not self.context and (name in Command.SYSTEM or name in Command.PLUGINS):
+                if self.plugins[name]:
+                    self.context.append(Command.GetCommand(name, self))
+                    self.args = params[1:]
+                else:
+                    await self.session.Send(f'Plugin <{name}> disabled. please enable it first.')
+                return
+        self.args = params
 
     async def Send(self, message, reciever=None):
         raise NotImplementedError

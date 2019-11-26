@@ -14,8 +14,10 @@ class User:
         self.name = name
     def GetName(self):
         return self.name
-    def AuthorityCheck(self):
+    def Authority(self):
         return self.isAdmin
+    def RootAuthority(self):
+        return uid in UserManager.GetSuperUsers()
 
     def AddAttr(self, name, value=None):
         self.__dict__[name] = value
