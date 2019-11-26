@@ -16,6 +16,7 @@ class Incan:
         self.deck = Deck()
         self.monsters = []
         self.artifact = 0
+        self.acquiredArtifact = 0
         self.temples = Deck('Temple')
         
         self.helpdoc = '指令列表: \n<start/run> 开始游戏\n<join> 加入游戏\n<status> 查看状态\n<go/back> 前进/撤退\n<rule/doc> 查看规则\n<exit/quit> 退出'
@@ -87,13 +88,15 @@ class Incan:
     async def InQueue(self, sender):
         if self.option == Option.EXIT:
             await self.session.Send('游戏结束~下次再见~')
-            self.completed = True
+            self.Exit()
         elif self.option == Option.HELP:
             await self.session.Send(self.helpdoc)
         elif self.option == Option.RULE:
             await self.session.Send(self.ruledoc)
         elif self.option == Option.VERSION:
             await self.session.Send(self.version)
+        elif self.option == Option.STATUS:
+            await self.session.Send(self.GetTeamInfo())
         elif self.option == Option.JOINGAME:
             self.InitPlayer(sender)
             await self.session.Send(f'<{sender.name}>加入了小队，当前小队共{len(self.members)}人。')
@@ -101,31 +104,42 @@ class Incan:
             self.status = IncanStatus.GAMING
             await self.session.Send(f'第1轮：{self.temples.Draw().name}')
             meiri.AddListening(self.session.sid, [Session.GetSessionId(SessionType.FRIEND, uid) for uid in self.members])
-        elif self.option == Option.STATUS:
-            await self.session.Send(self.GetTeamInfo())
 
     async def Ready(self, sender):
         if self.option == Option.HELP:
             await self.session.Send(self.helpdoc)
-            self.completed = True
+            self.Exit()
         elif self.option == Option.RULE:
             await self.session.Send(self.ruledoc)
-            self.completed = True
+            self.Exit()
         elif self.option == Option.VERSION:
             await self.session.Send(self.version)
-            self.completed = True
+            self.Exit()
         elif self.option == Option.GAMESTART:
             self.status = IncanStatus.INQUEUE
             self.InitPlayer(sender)
             await self.session.Send(self.greeting)
 
+    def Exit(self):
+        meiri.RemoveListening(self.session.sid)
+        self.completed = True
+
     async def Gaming(self,sender):
-        if self.option == Option.FORWARD and self.members[sender.uid]['status'] == 0:
+        if self.option == Option.EXIT:
+            await self.session.Send('游戏结束~下次再见~')
+            self.Exit()
+        elif self.option == Option.HELP:
+            await self.session.Send(self.helpdoc)
+        elif self.option == Option.RULE:
+            await self.session.Send(self.ruledoc)
+        elif self.option == Option.VERSION:
+            await self.session.Send(self.version)
+        elif self.option == Option.STATUS:
+            await self.session.Send(self.GetGameStatus())
+        elif self.option == Option.FORWARD and self.members[sender.uid]['status'] == 0:
             self.members[sender.uid]['status'] = 1
         elif self.option == Option.RETREAT and self.members[sender.uid]['status'] == 0:
             self.members[sender.uid]['status'] = 2
-        elif self.option == Option.STATUS:
-            await self.session.Send(self.GetGameStatus())
 
         if self.CheckTurnEnd():
             await self.DoRetreat()
@@ -158,6 +172,7 @@ class Incan:
                     self.route.append(card)
                 elif card.ctype is Card.Type.ARTIFACT:
                     self.route.append(card)
+                    self.artifact += 1
                     await self.session.Send(f'发现了遗物<{card.name}>.')
             else:
                 self.deck = Deck()
@@ -182,16 +197,26 @@ class Incan:
 
 
     async def Clearing(self):
-        winner = {'name': None, 'value': 0}
+        winner = {'uid': [], 'value': 0}
         for uid, member in self.members.items():
             income = 0
             for name, jewel in member['income'].items():
                 income += jewel['number'] * jewel['value']
-            if income > winner['value'] and income != 0:
-                winner['name'] = member['name']
+            if income > winner['value']:
+                winner['uid'].clear()
+                winner['uid'].append(uid)
                 winner['value'] = income
-        await self.session.Send(f'<{winner["name"]}>是最后的胜利者.')
-        self.completed = True
+            elif income == winner['value'] and income > 0:
+                winner['uid'].append(uid)
+        if winner['value'] > 0:
+            for uid in winner['uid']:
+                trophy = []
+                for name, jewel in self.members[uid]['income'].items():
+                    trophy.append(f'<{name}>{jewel["number"]}枚')
+                await self.session.Send(f'<{self.members[uid]["name"]}>带着{", ".join(trophy)}获得了胜利。')
+        else:
+            await self.session.Send('有勇气才能获得宝石哦！')
+        self.Exit()
 
     async def DoRetreat(self):
         runaways = [uid for uid in self.members if self.members[uid]['status'] == 2]
@@ -202,8 +227,8 @@ class Incan:
             for uid in runaways:
                 self.members[uid]['treasures'][card.name]['number'] += card.number // num
             if card.ctype is Card.Type.ARTIFACT and num == 1:
-                self.artifact += 1
-                if self.artifact > 2:
+                self.acquiredArtifact += 1
+                if self.acquiredArtifact > 2:
                     self.members[uid]['treasures'][card.name]['value'] = 10
             card.number = card.number % num
         await self.session.Send(f'<{">, <".join([self.members[uid]["name"] for uid in runaways])}>放弃了冒险.')      

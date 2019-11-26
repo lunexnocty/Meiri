@@ -5,11 +5,11 @@ from Plugins import *
 
 UserManager.SetSuperUsers('lunex')
 
-def onMessage(args):
+async def onMessage(args):
     session = MySession('G@0')
     sender = MyUser(args[0])
     message = Message(args[1])
-    meiri.OnMessage(session, sender, message)
+    await meiri.OnMessage(session, sender, message)
 
 class MyUser(User):
     def __init__(self, userstr):
@@ -34,7 +34,7 @@ class MySession(Session):
         stype, handle = GetMetaData(sid)
         super().__init__(stype, handle)
     
-    def Send(self, message, reciever=None):
+    async def Send(self, message, reciever=None):
         print(f'{self.sid}:', message)
 
 '''机器人逻辑本地测试脚本：
@@ -47,8 +47,15 @@ Eg：
     $ G@10001 123456#lunex -echo Hello, Ameya, Meiri!
 '''
 
-if __name__ == '__main__':
+
+async def main():
     ins = input('> ')
     while(ins != 'quit'):
-        onMessage(ins.split(' ', 1))
+        await onMessage(ins.split(' ', 1))
         ins = input('> ')
+
+if __name__ == '__main__':
+    import asyncio
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.close()
