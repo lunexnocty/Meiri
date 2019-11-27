@@ -143,6 +143,8 @@ class Incan:
             self.status = IncanStatus.INQUEUE
             self.InitPlayer(sender)
             await self.session.Send(self.greeting)
+        else:
+            self.Exit()
 
     def Exit(self):
         meiri.RemoveListening(self.session.sid)
